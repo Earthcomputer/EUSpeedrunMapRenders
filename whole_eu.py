@@ -118,3 +118,63 @@ class WholeEUIntroScene(WholeEUScene):
         ]
         self.play(LaggedStart(*[self.load_eu_country(name).animate_creation(run_time=0.3) for name in intro_countries_order], lag_ratio=0.2))
         self.wait(2)
+
+class IntroTitle(Scene):
+    def construct(self):
+        title = Text("EU Speedrun", font="Open Sans").set_color(WHITE)
+
+        base_star = Star().set_color(0xffcc00).set_opacity(1.0).scale(0.3)
+        base_star.reverse_points()
+        # Use next_to once so we get the usual spacing/buffer
+        base_star.next_to(title, RIGHT)
+        # Euclidean distance between centres (includes the buffer)
+        radius = np.linalg.norm(base_star.get_center() - title.get_center())
+        # Put the star straight UP at that same centre-to-centre distance
+        base_star.move_to(title.get_center() + radius * UP)
+
+        self.play(LaggedStart(Write(title, run_time=1.5), DrawBorderThenFill(base_star, run_time=1), lag_ratio=0.75))
+
+        # --- create copies stacked on the base star (total 12) ---
+        stars = [base_star] + [base_star.copy() for _ in range(11)]
+        for s in stars[1:]:
+            s.move_to(base_star.get_center())
+            self.add(s)
+
+        center = title.get_center()
+        n = len(stars)
+        step = TAU / n
+
+        # angles (start and target) for each star
+        start_angles = [
+            np.arctan2(s.get_center()[1] - center[1], s.get_center()[0] - center[0])
+            for s in stars
+        ]
+        # choose a consistent set of target angles so they are evenly spaced
+        angle0 = start_angles[0]                     # keep the base_star as the "first" star
+        target_angles = [angle0 + i * step for i in range(n)]
+
+        # build arcs and MoveAlongPath animations
+        animations = []
+        for s, a_start, a_target in zip(stars, start_angles, target_angles):
+            # raw delta (positive => CCW). We want clockwise movement => negative angle.
+            delta = a_target - a_start
+            if delta > 0:
+                delta -= TAU   # force the movement to go clockwise (negative angle)
+
+            # create an arc centered on `center` with the computed (negative) angle
+            arc = Arc(start_angle=a_start, angle=delta, radius=radius).shift(center)
+
+            # MoveAlongPath translates the star along the arc but DOES NOT rotate the mobject
+            animations.append(MoveAlongPath(s, arc))
+
+        # play them together (or use LaggedStart for staggered fan-out)
+        bg = FullScreenRectangle(fill_color=0x003399, fill_opacity=0, stroke_width=0)
+        bg.set_z_index(-10)  # keep it behind everything
+        self.add(bg)
+
+        self.play(*(animations + [bg.animate.set_fill(opacity=1)]), run_time=2)
+
+        self.wait(0.5)
+
+        self.play(FadeOut(title))
+        self.wait(1)
