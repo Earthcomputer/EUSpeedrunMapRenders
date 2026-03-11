@@ -15,13 +15,29 @@ Usage:
 import math
 import os
 import io
+import hashlib
 import requests
 import numpy as np
 from PIL import Image
 from typing import Tuple, Optional
 
 # Manim import (Community edition)
-from manim import ImageMobject, Scene
+from manim import ImageMobject, Scene, config
+
+try:
+    from manim.mobject.opengl.opengl_image_mobject import OpenGLImageMobject
+    from manim.utils.images import get_full_raster_image_path
+except Exception:
+    OpenGLImageMobject = None
+    get_full_raster_image_path = None
+
+
+if OpenGLImageMobject is not None and get_full_raster_image_path is not None:
+    class OpenGLPathImageMobject(OpenGLImageMobject):
+        def get_image_from_file(self, image_file, image_mode):
+            return str(get_full_raster_image_path(image_file))
+else:
+    OpenGLPathImageMobject = None
 
 
 # ---- Web-Mercator helpers ----
@@ -153,6 +169,7 @@ class TileMap:
         self.width_px = None
         self.height_px = None
         self._fetch_z = None
+        self._cached_image_path: Optional[str] = None
 
     def build(self, scene = None) -> Image.Image:
         """
@@ -164,8 +181,14 @@ class TileMap:
         if self.output_width_px is None or self.output_height_px is None:
             if scene is None:
                 raise ValueError("Scene must be provided if output image size is not specified")
-            self.output_width_px = scene.camera.pixel_width
-            self.output_height_px = scene.camera.pixel_height
+            camera = getattr(scene, "camera", None)
+            pixel_width = getattr(camera, "pixel_width", None)
+            pixel_height = getattr(camera, "pixel_height", None)
+            if pixel_width is None or pixel_height is None:
+                pixel_width = int(config["pixel_width"])
+                pixel_height = int(config["pixel_height"])
+            self.output_width_px = int(pixel_width)
+            self.output_height_px = int(pixel_height)
         
         scale_frac = 2 ** (self.zoom - z_tile)
 
@@ -252,7 +275,52 @@ class TileMap:
         self.min_tx, self.min_ty, self.max_tx, self.max_ty = min_tx, min_ty, max_tx, max_ty
         self.global_top_left_px = (top_left_frac_x, top_left_frac_y)
         self.width_px, self.height_px = final_img.size
+        self._cached_image_path = None
         return final_img
+
+    def _get_scene_frame_metrics(self, scene: Scene) -> tuple[float, float, np.ndarray]:
+        camera = getattr(scene, "camera", None)
+        frame_width = getattr(camera, "frame_width", None)
+        frame_height = getattr(camera, "frame_height", None)
+        if frame_width is None or frame_height is None:
+            get_shape = getattr(camera, "get_shape", None)
+            if callable(get_shape):
+                shape = get_shape()
+                if isinstance(shape, tuple) and len(shape) >= 2:
+                    frame_width = float(shape[0])
+                    frame_height = float(shape[1])
+        if frame_width is None or frame_height is None:
+            frame_width = float(config["frame_width"])
+            frame_height = float(config["frame_height"])
+
+        frame_center = getattr(camera, "frame_center", None)
+        if frame_center is None:
+            get_center = getattr(camera, "get_center", None)
+            if callable(get_center):
+                frame_center = get_center()
+        if frame_center is None:
+            frame_center = np.array([0.0, 0.0, 0.0], dtype=float)
+        else:
+            frame_center = np.array(frame_center, dtype=float)
+
+        return float(frame_width), float(frame_height), frame_center
+
+    def _ensure_cached_image_file(self) -> str:
+        if self.image is None:
+            raise RuntimeError("TileMap image is not built yet")
+        if self._cached_image_path and os.path.exists(self._cached_image_path):
+            return self._cached_image_path
+        key = (
+            f"{self.center_lat:.6f}|{self.center_lon:.6f}|{self.zoom:.3f}|"
+            f"{self.output_width_px}x{self.output_height_px}|{self.width_px}x{self.height_px}"
+        )
+        digest = hashlib.sha1(key.encode("utf-8")).hexdigest()[:20]
+        filename = f"stitched_{digest}.png"
+        path = os.path.join(self.fetcher.cache_dir, filename)
+        if not os.path.exists(path):
+            self.image.save(path)
+        self._cached_image_path = path
+        return path
 
     
     def get_numpy_image(self, scene = None) -> np.ndarray:
@@ -278,12 +346,19 @@ class TileMap:
         # ensure image built
         arr = self.get_numpy_image(scene)
 
-        # ImageMobject accepts a NumPy array (H, W, 3/4) uint8
-        img_m = ImageMobject(arr)
+        renderer_name = scene.renderer.__class__.__name__ if getattr(scene, "renderer", None) is not None else ""
+        renderer_cfg = str(config["renderer"]).lower()
+        is_opengl = renderer_name == "OpenGLRenderer" or "opengl" in renderer_cfg
+
+        if is_opengl and OpenGLPathImageMobject is not None:
+            img_m = OpenGLPathImageMobject(self._ensure_cached_image_file())
+        else:
+            img_m = ImageMobject(arr)
 
         if set_width_to_frame:
-            img_m.set_width(scene.camera.frame_width)
-            img_m.move_to(scene.camera.frame_center)
+            frame_w, _, frame_center = self._get_scene_frame_metrics(scene)
+            img_m.set_width(frame_w)
+            img_m.move_to(frame_center)
 
         return img_m
 
@@ -305,9 +380,7 @@ class TileMap:
         rel_y = py - top_left_y
 
         # map rel_x/rel_y in [0..width_px],[0..height_px] -> scene coordinates:
-        frame_w = scene.camera.frame_width
-        # frame height depends on aspect
-        frame_h = scene.camera.frame_height
+        frame_w, frame_h, _ = self._get_scene_frame_metrics(scene)
 
         # origin: scene center corresponds to the center of the image after set_width
         # x: left -> negative, right -> positive

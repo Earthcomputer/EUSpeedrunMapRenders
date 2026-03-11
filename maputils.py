@@ -1,10 +1,17 @@
+from __future__ import annotations
 import json
 from bisect import bisect_right
+from pathlib import Path
 from manim import *
 from manim.typing import *
 from manimpango import register_font
 from tilemap_manim import *
 from typing import Callable, List, Sequence, Tuple
+
+try:
+    from manim.mobject.opengl.opengl_vectorized_mobject import OpenGLVMobject
+except Exception:
+    OpenGLVMobject = None
 
 register_font("OpenSans-Bold.ttf")
 
@@ -16,6 +23,7 @@ def load_tilemap_settings():
         return {}
 
 tilemap_settings = load_tilemap_settings()
+TRAIN_ICON_PATH = Path("assets/train-front-fill.svg")
 
 def route_rate(route: VMobject, rate_func: Callable[[float], float] = smooth) -> Callable[[float], float]:
     curve_lengths = [c[1] for c in route.get_curve_functions_with_lengths()]
@@ -107,7 +115,7 @@ class DashOffsetAnimation(Animation):
         self.mobject.set_opacity(opacity)
 
 class Geojson:
-    def __init__(self, points: List[Point3D], route_line: VMobject, dashed_route_line: DashedLine):
+    def __init__(self, points: List[Point3D], route_line: VMobject, dashed_route_line: DashedLine | None):
         self.points = points
         self.route_line = route_line
         self.dashed_route_line = dashed_route_line
@@ -116,11 +124,57 @@ class Geojson:
         return Create(self.route_line, rate_func=route_rate(self.route_line, linear))
     
     def animate_dashes(self, run_time: float = 10) -> Animation:
+        if self.dashed_route_line is None:
+            raise ValueError("Dashed route line is not available")
         return DashOffsetAnimation(self.dashed_route_line, run_time=run_time)
 
-    def create_and_animate(self, scene: Scene, dash_animate_time: float = 10) -> Geojson:
+    def create_train_icon(self) -> VGroup:
+        if TRAIN_ICON_PATH.exists():
+            train_svg = SVGMobject(str(TRAIN_ICON_PATH))
+            train_svg.set_fill(WHITE, opacity=1.0).set_stroke(DARK_BLUE, width=2.6, opacity=1.0)
+            train_svg.scale_to_fit_height(0.42)
+        else:
+            train_svg = Triangle().set_fill(WHITE, opacity=1.0).set_stroke(DARK_BLUE, width=2.6, opacity=1.0).scale(0.16).rotate(-PI / 2)
+        shadow = train_svg.copy().set_fill(BLACK, opacity=0.22).set_stroke(width=0).shift(0.045 * DOWN + 0.04 * RIGHT)
+        return VGroup(shadow, train_svg).scale(1.18)
+
+    def create_and_animate(
+        self,
+        scene: Scene,
+        dash_animate_time: float = 10,
+        keep_on_top: Sequence[Mobject] | None = None,
+    ) -> Geojson:
+        renderer = str(config["renderer"]).lower()
+        if "opengl" in renderer:
+            route_glow = self.route_line.copy().set_stroke(color=WHITE, width=10.0, opacity=0.2)
+            scene.play(
+                Create(route_glow, rate_func=route_rate(route_glow, linear)),
+                self.animate_line_creation(),
+            )
+            dash_count = max(30, min(220, len(self.points) // 5))
+            dotted_route = DashedVMobject(
+                self.route_line.copy(),
+                num_dashes=dash_count,
+                dashed_ratio=0.5,
+            )
+            dotted_route.set_stroke(color=WHITE, width=3.2, opacity=0.9)
+            if hasattr(dotted_route, "set_z_index"):
+                dotted_route.set_z_index(2)
+            highlight = self.create_train_icon().move_to(self.start)
+            if hasattr(highlight, "set_z_index"):
+                highlight.set_z_index(3)
+            scene.play(FadeIn(dotted_route, run_time=0.3))
+            if keep_on_top:
+                scene.bring_to_front(*keep_on_top, highlight)
+            scene.add(highlight)
+            scene.play(MoveAlongPath(highlight, self.route_line), run_time=dash_animate_time, rate_func=linear)
+            scene.play(FadeOut(highlight, run_time=0.15))
+            return self
         scene.play(self.animate_line_creation())
-        scene.play(self.animate_dashes(run_time=dash_animate_time))
+        if self.dashed_route_line is not None:
+            scene.play(self.animate_dashes(run_time=dash_animate_time))
+        if keep_on_top:
+            scene.bring_to_front(*keep_on_top)
         return self
 
     @property
@@ -138,9 +192,13 @@ class MapMarker(VGroup):
         self.add(self.dot)
         self.text = Text(label, font="Open Sans", font_size=24).set_color(DARK_BLUE).next_to(self.dot)
         self.add(self.text)
-        self.set_z_index(1)
+        if hasattr(self, "set_z_index"):
+            self.set_z_index(1)
 
     def animate_creation(self) -> Sequence[Animation]:
+        renderer = str(config["renderer"]).lower()
+        if "opengl" in renderer:
+            return [GrowFromCenter(self.dot), FadeIn(self.text, shift=0.1 * UP, run_time=1)]
         return [GrowFromCenter(self.dot), Write(self.text, run_time=1)]
 
 class TileMapScene(Scene):
@@ -169,11 +227,18 @@ class TileMapScene(Scene):
         points = [self.tm.latlon_to_scene_coords(lat, lon, self) for [lon, lat, *_] in geometry["coordinates"]]
         points = [np.array([sx, sy, 0.0], dtype=float) for sx, sy in points]
 
-        route_line = VMobject()
+        renderer = str(config["renderer"]).lower()
+        if "opengl" in renderer and OpenGLVMobject is not None:
+            route_line = OpenGLVMobject()
+        else:
+            route_line = VMobject()
         route_line.set_points_as_corners(points)
         route_line.set_stroke(color=DARK_BLUE, width=6.0)
 
-        dashed_route_line = DashedLine(route_line)
+        if "opengl" in renderer:
+            dashed_route_line = None
+        else:
+            dashed_route_line = DashedLine(route_line)
 
         return Geojson(points, route_line, dashed_route_line)
     
