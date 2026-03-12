@@ -119,6 +119,46 @@ class WholeEUIntroScene(WholeEUScene):
         self.play(LaggedStart(*[self.load_eu_country(name).animate_creation(run_time=0.3) for name in intro_countries_order], lag_ratio=0.2))
         self.wait(2)
 
+class VisitedScene(WholeEUScene):
+    index: int
+    
+    def animate_creation(self, country: EUCountry) -> List[Animation]:
+        title_top = any((pt[1] < -0.75 for pts in country.points for pt in pts))
+        country_name = EU_COUNTRIES[self.index]
+        if country_name == "Czech Republic":
+            country_name = "Czechia"
+        title = Text(country_name + " Visited!", font="Open Sans").set_color(DARK_BLUE)
+        if title_top:
+            title.to_edge(UP)
+        else:
+            title.to_edge(DOWN)
+        return [country.animate_creation(), Write(title)]
+    
+    def construct(self):
+        for country in EU_COUNTRIES[:self.index]:
+            for line in self.load_eu_country(country).route_lines:
+                self.add(line)
+        
+        self.play(*self.animate_creation(self.load_eu_country(EU_COUNTRIES[self.index])))
+        self.wait(2)
+
+class VisitedMaltaScene(VisitedScene):
+    def __init__(self, *args, **kwargs):
+        self.index = 0
+        super().__init__(*args, **kwargs)
+    
+    def animate_creation(self, country):
+        # Malta is so small we need to point to it
+        malta_object = self.load_eu_country(EU_COUNTRIES[self.index]).route_lines[0]
+        arrow = Arrow(malta_object.get_right() + 1 * RIGHT, malta_object.get_right() + 0.1 * LEFT).set_color(DARK_BLUE)
+        label = Text("Malta", font="Open Sans", font_size=20).next_to(arrow, buff=0.1).set_color(DARK_BLUE)
+        return super().animate_creation(country) + [Create(arrow), Write(label)]
+
+for index in range(1, len(EU_COUNTRIES)):
+    scene_name = f"Visited{EU_COUNTRIES[index].replace(" ", "")}Scene"
+    scene_class = type(scene_name, (VisitedScene,), {"index": index})
+    globals()[scene_name] = scene_class
+
 class IntroTitle(Scene):
     def construct(self):
         title = Text("EU Speedrun", font="Open Sans").set_color(WHITE)
