@@ -103,10 +103,10 @@ def stitch_tiles(
     image = Image.new("RGBA", (cols * tile_size, rows * tile_size), (0, 0, 0, 0))
     world_size = 2 ** z
     with tqdm(
-        total=total,
-        desc="Downloading tiles",
-        unit="tile",
-        bar_format=PROGRESS_BAR_FORMAT,
+            total=total,
+            desc="Downloading tiles",
+            unit="tile",
+            bar_format=PROGRESS_BAR_FORMAT,
     ) as progress:
         for ix, tx in enumerate(range(min_tx, max_tx + 1)):
             for iy, ty in enumerate(range(min_ty, max_ty + 1)):

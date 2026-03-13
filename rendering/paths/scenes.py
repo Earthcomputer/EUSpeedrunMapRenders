@@ -15,7 +15,6 @@ from rendering.core.map_markers import MapMarker
 from rendering.core.map_scene import TileMapScene
 from rendering.core.route_visuals import SpeedProfile, SpeedSegment, TripRoute
 from rendering.core.tile_map import TileMap
-
 from .models import PathPoint, PathSpec, load_path_specs, scene_name_for_identifier
 from .routing import ensure_geojson_for_spec_with_status, find_cached_geojson
 
@@ -269,19 +268,19 @@ class PathScene(TileMapScene):
         cached = find_cached_geojson(self.path_spec)
         if cached is not None:
             with tqdm(
-                total=1,
-                desc="Using geojson cache",
-                unit="seg",
-                bar_format=PROGRESS_BAR_FORMAT,
+                    total=1,
+                    desc="Using geojson cache",
+                    unit="seg",
+                    bar_format=PROGRESS_BAR_FORMAT,
             ) as progress:
                 progress.update(1)
             return cached
         fallback_total = max(1, len(self.path_spec.route_points()) - 1)
         with tqdm(
-            total=1,
-            desc="Downloading geojson route",
-            unit="seg",
-            bar_format=PROGRESS_BAR_FORMAT,
+                total=1,
+                desc="Downloading geojson route",
+                unit="seg",
+                bar_format=PROGRESS_BAR_FORMAT,
         ) as progress:
             def update(event: dict[str, int | str]) -> None:
                 total = max(1, int(event.get("total_segments", fallback_total)))

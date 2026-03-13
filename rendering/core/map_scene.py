@@ -51,10 +51,10 @@ class TileMapScene(Scene):
             raise ValueError(f'GeoJSON "{path.as_posix()}" has invalid coordinates')
         points = []
         with tqdm(
-            total=len(coordinates),
-            desc="Loading route geometry",
-            unit="pt",
-            bar_format=PROGRESS_BAR_FORMAT,
+                total=len(coordinates),
+                desc="Loading route geometry",
+                unit="pt",
+                bar_format=PROGRESS_BAR_FORMAT,
         ) as progress:
             for coordinate in coordinates:
                 if not isinstance(coordinate, list) or len(coordinate) < 2:

@@ -27,6 +27,7 @@ if __name__ != "__main__":
 else:
     from rendering.paths.models import load_path_specs, scene_name_for_identifier
 
+
     def get_scene_name_for_path(identifier: str) -> str:
         specs = load_path_specs()
         for spec in specs:
@@ -61,7 +62,6 @@ def main(argv: list[str] | None = None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-
 
 __all__ = [
     "PathScene",
