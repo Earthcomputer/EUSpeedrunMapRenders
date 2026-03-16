@@ -128,11 +128,12 @@ class TileMap:
             output_height_px: int | None = None,
             template_url: str = DEFAULT_TEMPLATE_URL,
             tile_size: int = DEFAULT_TILE_SIZE,
+            zoom_offset: float = 0,
             cache_dir: Path | str | None = None,
     ) -> None:
         self.center_lat = center_lat
         self.center_lon = center_lon
-        self.zoom = float(zoom)
+        self.zoom = float(zoom + zoom_offset)
         self.output_width_px = output_width_px
         self.output_height_px = output_height_px
         self.tile_size = tile_size

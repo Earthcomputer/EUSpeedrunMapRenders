@@ -193,7 +193,7 @@ def display_country_name(name: str) -> str:
 
 class EuropeMapScene(TileMapScene):
     def create_tile_map(self, **kwargs):
-        return TileMap(57.51465184611381, 13.463387421839668, 3.45, **kwargs)
+        return TileMap(57.51465184611381, 13.463387421839668, 4.45, **kwargs)
 
     def load_country_shape(self, name: str) -> CountryShape:
         geometry = _country_geometries().get(name)
