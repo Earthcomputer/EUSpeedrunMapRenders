@@ -145,8 +145,7 @@ class TripRoute:
         return np.maximum.accumulate(fractions.astype(float)), proportions
 
     def _distance_to_proportion(self, distance_fraction: float) -> float:
-        clamped = float(np.clip(distance_fraction, 0.0, 1.0))
-        return float(np.interp(clamped, self._distance_fractions, self._distance_proportions))
+        return route_rate(self.route_line, rate_func=linear)(distance_fraction)
 
     @staticmethod
     def _inset_endpoints(points: Sequence[np.ndarray], amount: float = 0.15) -> list[np.ndarray]:
