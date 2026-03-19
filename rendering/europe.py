@@ -208,8 +208,8 @@ class EuropeMapScene(TileMapScene):
             for lon, lat in polygon
         ]
         outline = Polygon(*points)
-        outline.set_stroke(color=DARK_BLUE, width=1.3, opacity=0.65)
-        outline.set_fill(opacity=0.0)
+        outline.set_stroke(color=DARK_BLUE, width=1.3)
+        outline.set_fill(opacity=0.65)
         return outline
 
 
