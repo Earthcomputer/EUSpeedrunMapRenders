@@ -50,7 +50,7 @@ def write_yaml_file(path: Path, value: Any) -> None:
 class PathPoint:
     lat: float
     lon: float
-    name: str | None = None
+    names: list[str]
     offset_minutes: int | None = None
     stopped_minutes: int | None = None
 
@@ -59,8 +59,8 @@ class PathPoint:
             "lat": float(self.lat),
             "lon": float(self.lon),
         }
-        if self.name:
-            payload["name"] = self.name
+        if self.names:
+            payload["names"] = self.names
         if self.offset_minutes is not None:
             payload["offset_minutes"] = int(self.offset_minutes)
         if self.stopped_minutes is not None:
@@ -82,9 +82,9 @@ class PathSpec:
             raise ValueError(f"Unsupported transport type: {self.transport!r}")
         if not self.identifier.strip():
             raise ValueError("Path identifier cannot be empty")
-        if not self.start.name or not self.start.name.strip():
+        if not self.start.names or not self.start.names[0].strip():
             raise ValueError(f'Path "{self.identifier}" start.name is required')
-        if not self.end.name or not self.end.name.strip():
+        if not self.end.names or not self.end.names[0].strip():
             raise ValueError(f'Path "{self.identifier}" end.name is required')
 
     @property
@@ -174,7 +174,8 @@ def _parse_point(value: Any, label: str, path: Path) -> PathPoint:
     except Exception as exc:
         raise ValueError(f'Path config "{path.as_posix()}" field {label} has invalid lat/lon') from exc
     name_raw = value.get("name")
-    name = str(name_raw).strip() if isinstance(name_raw, str) and name_raw.strip() else None
+    name = str(name_raw).strip() if isinstance(name_raw, str) and name_raw.strip() else ""
+    names = name.split(" / ")
     minutes_raw = value.get("offset_minutes")
     if minutes_raw is None:
         offset_minutes = None
@@ -194,7 +195,7 @@ def _parse_point(value: Any, label: str, path: Path) -> PathPoint:
     return PathPoint(
         lat=lat,
         lon=lon,
-        name=name,
+        names=names,
         offset_minutes=offset_minutes,
         stopped_minutes=stopped_minutes,
     )

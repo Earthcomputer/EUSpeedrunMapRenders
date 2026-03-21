@@ -3,7 +3,7 @@ transport: train
 start:
   lat: 43.611113
   lon: 1.45361
-  name: Toulouse Matabiau
+  name: Toulouse-Matabiau
   datetime: '2025-09-11T22:16:00Z'
   offset_minutes: 0
 end:

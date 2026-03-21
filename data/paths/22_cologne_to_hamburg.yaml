@@ -3,13 +3,13 @@ transport: train
 start:
   lat: 50.943056
   lon: 6.958613
-  name: Cologne Hbf
+  name: Cologne Central Station / Köln Hauptbahnhof
   datetime: '2025-09-14T13:11:00Z'
   offset_minutes: 0
 end:
   lat: 53.552778
   lon: 10.006945
-  name: Hamburg Hbf
+  name: Hamburg Central Station / Hamburg Hauptbahnhof
   offset_minutes: 243
 waypoints:
 - lat: 51.219996

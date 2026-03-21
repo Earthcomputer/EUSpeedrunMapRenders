@@ -22,6 +22,7 @@ from manim import (
     Succession,
     TAU,
     Text,
+    Transform,
     UP,
     UR,
     UL,
@@ -88,6 +89,20 @@ class MapMarker(VGroup):
         self.label.save_state()
         self.prepare_intro_state()
         self.add(self.halo, self.dot, self.label)
+    
+    @staticmethod
+    def animate_translation(markers: list[MapMarker]) -> list[Animation]:
+        animations = []
+        for i in range(1, len(markers)):
+            marker_a = markers[i - 1]
+            marker_b = markers[i]
+            marker_b.show_final_state()
+            animations.append(AnimationGroup(
+                Transform(marker_a.label_bg, marker_b.label_bg, replace_mobject_with_target_in_scene=True),
+                Transform(marker_a.label_shadow, marker_b.label_shadow, replace_mobject_with_target_in_scene=True),
+                Succession(FadeOut(marker_a.text, run_time=0.5), FadeIn(marker_b.text, run_time=0.5))
+            ))
+        return animations
 
     @staticmethod
     def snap_label_direction(direction: Point3DLike | None, location: Point3DLike) -> np.ndarray:
@@ -169,7 +184,10 @@ class MapMarker(VGroup):
             if score > best_score:
                 best_score = score
                 best_direction = as_point3(candidate)
-        self.label_direction = best_direction
+        self.set_label_direction(best_direction)
+    
+    def set_label_direction(self, label_direction: Point3DLike) -> None:
+        self.label_direction = label_direction
         self.label_target.next_to(self.dot, self.label_direction, buff=0.34)
         self.label.restore()
         self.label.move_to(self.label_target)

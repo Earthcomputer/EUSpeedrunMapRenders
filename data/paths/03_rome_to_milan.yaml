@@ -3,13 +3,13 @@ transport: train
 start:
   lat: 41.900555
   lon: 12.501667
-  name: Rome Termini
+  name: Roma Termini
   datetime: '2025-09-09T07:20:00Z'
   offset_minutes: 0
 end:
   lat: 45.486388
   lon: 9.204163
-  name: Milan Centrale
+  name: Milano Centrale
   offset_minutes: 195
 waypoints:
 - lat: 44.506393

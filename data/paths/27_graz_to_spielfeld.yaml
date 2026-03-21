@@ -3,13 +3,13 @@ transport: train
 start:
   lat: 47.07222
   lon: 15.416392
-  name: Graz Hbf
+  name: Graz Central Station / Graz Hauptbahnhof
   datetime: '2025-09-17T19:40:00Z'
   offset_minutes: 0
 end:
   lat: 46.709443
   lon: 15.629167
-  name: Spielfeld-Strass
+  name: Spielfeld-Straß
   offset_minutes: 49
 waypoints:
 - lat: 47.058332

@@ -14,8 +14,8 @@ DEFAULT_GEOJSONS_DIR = Path("data/geojson/manual")
 class GeoJSONSpec:
     identifier: str
     path: Path
-    start_name: str
-    end_name: str
+    start_names: list[str]
+    end_names: list[str]
 
     @property
     def file_stem(self) -> str:
@@ -27,12 +27,12 @@ class GeoJSONSpec:
 
 def load_geojson_spec(path: Path) -> GeoJSONSpec:
     load_geojson_line_coordinates(path)
-    start_name, end_name = display_name_pair_for_identifier(path.stem)
+    start_names, end_names = display_name_pair_for_identifier(path.stem)
     return GeoJSONSpec(
         identifier=path.stem,
         path=path,
-        start_name=start_name,
-        end_name=end_name,
+        start_names=start_names,
+        end_names=end_names,
     )
 
 

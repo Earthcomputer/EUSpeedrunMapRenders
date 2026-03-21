@@ -3,13 +3,13 @@ transport: train
 start:
   lat: 50.767776
   lon: 6.091387
-  name: Aachen Hbf
+  name: Aachen Central Station / Aachen Hauptbahnhof
   datetime: '2025-09-14T11:51:00Z'
   offset_minutes: 0
 end:
   lat: 50.943056
   lon: 6.958613
-  name: Cologne Hbf
+  name: Cologne Central Station / Köln Hauptbahnhof
   offset_minutes: 53
 waypoints:
 - lat: 50.770275

@@ -3,7 +3,7 @@ transport: train
 start:
   lat: 53.552778
   lon: 10.006945
-  name: Hamburg Hbf
+  name: Hamburg Central Station / Hamburg Hauptbahnhof
   datetime: '2025-09-14T22:03:00Z'
   offset_minutes: 0
 end:

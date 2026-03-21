@@ -3,13 +3,13 @@ transport: train
 start:
   lat: 43.704448
   lon: 7.261945
-  name: Nice Ville
+  name: Nice-Ville
   datetime: '2025-09-09T17:25:00Z'
   offset_minutes: 0
 end:
   lat: 43.302774
   lon: 5.380278
-  name: Marseille Saint-Charles
+  name: Marseille-Saint-Charles
   offset_minutes: 158
 waypoints:
 - lat: 43.670837

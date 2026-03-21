@@ -9,7 +9,7 @@ start:
 end:
   lat: 43.611113
   lon: 1.45361
-  name: Toulouse Matabiau
+  name: Toulouse-Matabiau
   offset_minutes: 93
 waypoints:
 - lat: 43.2

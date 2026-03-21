@@ -1,4 +1,4 @@
-name: Pozzallo to Syracuse
+name: Pozzallo to Siracusa
 transport: bus
 start:
   lat: 36.733888
@@ -9,7 +9,7 @@ start:
 end:
   lat: 37.068889
   lon: 15.280556
-  name: Syracuse
+  name: Siracusa
   offset_minutes: 77
 waypoints:
 - lat: 36.778052

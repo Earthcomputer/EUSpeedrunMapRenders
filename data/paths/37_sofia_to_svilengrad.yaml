@@ -3,13 +3,13 @@ transport: train
 start:
   lat: 42.71194
   lon: 23.320832
-  name: Sofia
+  name: Sofia Central Station / Централна гара София
   datetime: '2025-09-20T15:05:00Z'
   offset_minutes: 0
 end:
   lat: 41.763623
   lon: 26.20263
-  name: Svilengrad
+  name: Svilengrad / Свиленград
   offset_minutes: 312
 waypoints:
 - lat: 42.671938

@@ -1,15 +1,15 @@
-name: Liege-Guillemins to Aachen Hbf
+name: Liège-Guillemins to Aachen Hbf
 transport: train
 start:
   lat: 50.624443
   lon: 5.566669
-  name: Liege-Guillemins
+  name: Liège-Guillemins
   datetime: '2025-09-14T10:08:00Z'
   offset_minutes: 0
 end:
   lat: 50.767776
   lon: 6.091387
-  name: Aachen Hbf
+  name: Aachen Central Station / Aachen Hauptbahnhof
   offset_minutes: 94
 waypoints:
 - lat: 50.643886

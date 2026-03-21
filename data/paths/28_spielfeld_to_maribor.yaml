@@ -3,7 +3,7 @@ transport: train
 start:
   lat: 46.709443
   lon: 15.629167
-  name: Spielfeld-Strass
+  name: Spielfeld-Straß
   datetime: '2025-09-17T20:32:00Z'
   offset_minutes: 0
 end:

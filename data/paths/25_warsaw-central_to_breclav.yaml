@@ -3,7 +3,7 @@ transport: train
 start:
   lat: 52.228613
   lon: 21.002775
-  name: Warsaw Central
+  name: Warsaw Central / Warszawa Centralna
   datetime: '2025-09-17T08:52:00Z'
   offset_minutes: 0
 end:

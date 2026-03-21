@@ -9,7 +9,7 @@ start:
 end:
   lat: 43.704448
   lon: 7.261945
-  name: Nice Ville
+  name: Nice-Ville
   offset_minutes: 56
 waypoints:
 - lat: 43.785279

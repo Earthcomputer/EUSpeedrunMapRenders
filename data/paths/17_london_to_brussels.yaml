@@ -1,15 +1,15 @@
-name: London St Pancras Intl to Brussels-Midi
+name: London St. Pancras International to Brussels-Midi
 transport: train
 start:
   lat: 51.530555
   lon: -0.125274
-  name: London St Pancras Intl
+  name: London St. Pancras International
   datetime: '2025-09-13T17:04:00Z'
   offset_minutes: 0
 end:
   lat: 50.835833
   lon: 4.336666
-  name: Brussels-Midi
+  name: Brussels-Midi / Bruxelles-Midi / Brussel-Zuid
   offset_minutes: 181
 waypoints:
 - lat: 50.639446

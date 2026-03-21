@@ -3,13 +3,13 @@ transport: train
 start:
   lat: 43.833335
   lon: 25.95611
-  name: Ruse
+  name: Ruse / Русе
   datetime: '2025-09-20T06:20:00Z'
   offset_minutes: 0
 end:
   lat: 42.726385
   lon: 23.316391
-  name: Sofia North
+  name: Sofia North / София Север
   offset_minutes: 360
 waypoints:
 - lat: 43.69811

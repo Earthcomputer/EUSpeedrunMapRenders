@@ -1,4 +1,4 @@
-name: Luxembourg to Liege-Guillemins
+name: Luxembourg to Liège-Guillemins
 transport: train
 start:
   lat: 49.599996
@@ -9,7 +9,7 @@ start:
 end:
   lat: 50.624443
   lon: 5.566669
-  name: Liege-Guillemins
+  name: Liège-Guillemins
   offset_minutes: 159
 waypoints:
 - lat: 49.618613

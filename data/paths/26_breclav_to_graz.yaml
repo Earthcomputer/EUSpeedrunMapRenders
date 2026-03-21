@@ -9,7 +9,7 @@ start:
 end:
   lat: 47.07222
   lon: 15.416392
-  name: Graz Hbf
+  name: Graz Central Station / Graz Hauptbahnhof
   offset_minutes: 218
 waypoints:
 - lat: 48.185004

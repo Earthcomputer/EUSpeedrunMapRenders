@@ -3,7 +3,7 @@ transport: train
 start:
   lat: 50.835833
   lon: 4.336666
-  name: Brussels-Midi
+  name: Brussels-Midi / Bruxelles-Midi / Brussel-Zuid
   datetime: '2025-09-13T20:32:00Z'
   offset_minutes: 0
 end:

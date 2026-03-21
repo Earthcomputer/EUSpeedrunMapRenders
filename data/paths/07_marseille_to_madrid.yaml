@@ -3,7 +3,7 @@ transport: train
 start:
   lat: 43.302774
   lon: 5.380278
-  name: Marseille Saint-Charles
+  name: Marseille-Saint-Charles
   datetime: '2025-09-10T08:04:00Z'
   offset_minutes: 0
 end:

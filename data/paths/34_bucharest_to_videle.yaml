@@ -3,7 +3,7 @@ transport: train
 start:
   lat: 44.44639
   lon: 26.074165
-  name: Bucharest North
+  name: Bucharest North / București Nord
   datetime: '2025-09-19T12:18:00Z'
   offset_minutes: 0
 end:

@@ -3,7 +3,7 @@ transport: train
 start:
   lat: 41.763623
   lon: 26.20263
-  name: Svilengrad
+  name: Svilengrad / Свиленград
   datetime: '2025-09-21T00:45:00Z'
   offset_minutes: 0
 end:

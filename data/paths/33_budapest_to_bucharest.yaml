@@ -9,7 +9,7 @@ start:
 end:
   lat: 44.44639
   lon: 26.074165
-  name: Bucharest North
+  name: Bucharest North / București Nord
   offset_minutes: 1000
 waypoints:
 - lat: 47.179165

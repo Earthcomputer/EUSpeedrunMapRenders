@@ -15,12 +15,12 @@ def scene_name_for_identifier(identifier: str) -> str:
     return slugify(identifier)
 
 
-def display_name_pair_for_identifier(identifier: str) -> tuple[str, str]:
+def display_name_pair_for_identifier(identifier: str) -> tuple[list[str], list[str]]:
     cleaned = re.sub(r"^\d+[_-]+", "", identifier.strip())
     start_raw, separator, end_raw = cleaned.partition("_to_")
     if not separator or not start_raw or not end_raw:
         raise ValueError(f'Identifier "{identifier}" must use "_to_" to separate start and end station names')
-    return humanize_station_name(start_raw), humanize_station_name(end_raw)
+    return [humanize_station_name(raw) for raw in start_raw.split("_aka_")], [humanize_station_name(raw) for raw in end_raw.split("_aka_")]
 
 
 def humanize_station_name(value: str) -> str:

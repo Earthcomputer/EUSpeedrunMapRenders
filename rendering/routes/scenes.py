@@ -71,7 +71,7 @@ class BaseRouteScene(TileMapScene):
     def route_geojson_path(self) -> Path:
         raise NotImplementedError
 
-    def route_labels(self) -> tuple[str, str]:
+    def route_labels(self) -> tuple[list[str], list[str]]:
         raise NotImplementedError
 
     def route_animation_options(self, geojson_path: Path) -> dict[str, object]:
@@ -97,31 +97,54 @@ class BaseRouteScene(TileMapScene):
             sampled.append(np.array(points[-1], dtype=float))
         return sampled
 
-    def _make_markers(self, route: TripRoute) -> tuple[MapMarker, MapMarker]:
-        start_label, end_label = self.route_labels()
-        start_marker = MapMarker(start_label, route.start, label_direction=route.start_label_direction())
-        end_marker = MapMarker(end_label, route.end, label_direction=route.end_label_direction())
+    def _make_markers(self, route: TripRoute) -> tuple[list[MapMarker], list[MapMarker]]:
+        start_labels, end_labels = self.route_labels()
+        # Put English last
+        start_labels = start_labels[1:] + [start_labels[0]]
+        end_labels = end_labels[1:] + [end_labels[0]]
+        
+        start_markers = [MapMarker(start_label, route.start, label_direction=route.start_label_direction()) for start_label in start_labels]
+        end_markers = [MapMarker(end_label, route.end, label_direction=route.end_label_direction()) for end_label in end_labels]
         frame_width, frame_height = self._frame_size()
         marker_route_points = self._downsample_points(route.points)
-        start_marker.choose_label_direction_with_route(frame_width, frame_height, marker_route_points, 0)
-        end_marker.choose_label_direction_with_route(frame_width, frame_height, marker_route_points, -1)
-        start_marker.clamp_label_within_frame(frame_width, frame_height)
-        end_marker.clamp_label_within_frame(frame_width, frame_height)
-        return start_marker, end_marker
+        longest_start_marker = max(start_markers, key=lambda marker: marker.label.width)
+        longest_start_marker.choose_label_direction_with_route(frame_width, frame_height, marker_route_points, 0)
+        longest_end_marker = max(end_markers, key=lambda marker: marker.label.width)
+        longest_end_marker.choose_label_direction_with_route(frame_width, frame_height, marker_route_points, -1)
+        for start_marker in start_markers:
+            if start_marker is not longest_start_marker:
+                start_marker.set_label_direction(longest_start_marker.label_direction)
+            start_marker.clamp_label_within_frame(frame_width, frame_height)
+        for end_marker in end_markers:
+            if end_marker is not longest_end_marker:
+                end_marker.set_label_direction(longest_end_marker.label_direction)
+            end_marker.clamp_label_within_frame(frame_width, frame_height)
+        
+        return start_markers, end_markers
 
     def construct(self) -> None:
         geojson_path = self.route_geojson_path()
         route = self.load_geojson(geojson_path)
-        start_marker, end_marker = self._make_markers(route)
-        start_marker.add_to_scene(self, foreground=True)
-        end_marker.add_to_scene(self, foreground=True)
-        atmosphere = self.create_map_atmosphere(start_marker.dot.get_center(), end_marker.dot.get_center())
+        start_markers, end_markers = self._make_markers(route)
+        atmosphere = self.create_map_atmosphere(start_markers[0].dot.get_center(), end_markers[0].dot.get_center())
         self.play(FadeIn(atmosphere, run_time=0.8))
-        self.play(*start_marker.animate_creation())
-        start_marker.show_final_state()
-        self.play(*end_marker.animate_creation())
-        end_marker.show_final_state()
-        marker_front = [*start_marker.foreground_mobjects(), *end_marker.foreground_mobjects()]
+        self.play(*start_markers[0].animate_creation())
+        start_markers[0].show_final_state()
+        if len(start_markers) > 1:
+            for i, animation in enumerate(MapMarker.animate_translation(start_markers)):
+                if i != 0:
+                    self.wait(0.2)
+                self.play(animation)
+        start_markers[-1].show_final_state()
+        self.play(*end_markers[0].animate_creation())
+        end_markers[0].show_final_state()
+        if len(end_markers) > 1:
+            for i, animation in enumerate(MapMarker.animate_translation(end_markers)):
+                if i != 0:
+                    self.wait(0.2)
+                self.play(animation)
+        end_markers[-1].show_final_state()
+        marker_front = [*start_markers[-1].foreground_mobjects(), *end_markers[-1].foreground_mobjects()]
         route.create_and_animate(self, keep_on_top=marker_front, **self.route_animation_options(geojson_path))
         self.wait(0.4)
 
@@ -138,9 +161,7 @@ class PathScene(BaseRouteScene):
         return self.path_spec.map_view()
 
     def route_labels(self) -> tuple[str, str]:
-        start_label = self.path_spec.start.name or self.path_spec.identifier
-        end_label = self.path_spec.end.name or self.path_spec.identifier
-        return start_label, end_label
+        return self.path_spec.start.names, self.path_spec.end.names
 
     def _build_speed_profile(self, geojson_path: Path) -> tuple[SpeedProfile, list[float]]:
         points = self.path_spec.points()
@@ -246,8 +267,8 @@ class GeoJSONScene(BaseRouteScene):
     def route_geojson_path(self) -> Path:
         return self.geojson_spec.path
 
-    def route_labels(self) -> tuple[str, str]:
-        return self.geojson_spec.start_name, self.geojson_spec.end_name
+    def route_labels(self) -> tuple[list[str], list[str]]:
+        return self.geojson_spec.start_names, self.geojson_spec.end_names
 
 
 PATH_SPECS = load_path_specs()
