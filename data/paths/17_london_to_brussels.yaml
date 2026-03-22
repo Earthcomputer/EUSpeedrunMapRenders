@@ -11,10 +11,10 @@ end:
   lat: 50.835833
   lon: 4.336666
   name: Brussels-Midi / Bruxelles-Midi / Brussel-Zuid
-  offset_minutes: 181
+  offset_minutes: 121
 waypoints:
 - lat: 50.639446
   lon: 3.07556
   name: Lille Europe
-  offset_minutes: 142
+  offset_minutes: 82
   stopped_minutes: 4

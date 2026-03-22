@@ -11,11 +11,15 @@ from manim import (
     Circle,
     Create,
     DARK_BLUE,
+    DL,
     DR,
     FadeIn,
     LineJointType,
+    Mobject,
     Scene,
     Text,
+    UL,
+    UR,
     ValueTracker,
     VMobject,
     VGroup,
@@ -194,6 +198,8 @@ class TripRoute:
             top_speed: float | None = None,
             station_progresses: Sequence[float] | None = None,
     ) -> TripRoute:
+        for mobj in keep_on_top or []:
+            mobj.set_z_index(10)
         recommended = float(np.clip(2.5 + self.path_length * 0.32, 2.8, 7.2))
         duration = draw_time if draw_time is not None else max(self.style.draw_time, recommended)
         layer_templates = [self._build_layer(layer_style) for layer_style in self.style.layers]
@@ -228,8 +234,32 @@ class TripRoute:
             
             stats_obj.scale(0.4)
             max_height = max((subobj.height for subobj in stats_obj.submobjects))
-            stats_obj.arrange_in_grid(cols=2, col_alignments="rl", buff=0.1, row_heights=[max_height] * len(stats)).to_corner(DR).set_color(DARK_BLUE)
-            scene.add_foreground_mobject(stats_obj)
+            stats_obj.arrange_in_grid(cols=2, col_alignments="rl", buff=0.1, row_heights=[max_height] * len(stats))
+            
+            def get_bbox(mobj: Mobject):
+                left = mobj.get_left()[0]
+                right = mobj.get_right()[0]
+                bottom = mobj.get_bottom()[1]
+                top = mobj.get_top()[1]
+                return [[left, bottom, 0], [right, top, 0]]
+            
+            def boxes_intersect(b1, b2):
+                return (b1[1][0] > b2[0][0] and b2[1][0] > b1[0][0] and
+                        b1[1][1] > b2[0][1] and b2[1][1] > b1[0][1])
+            
+            positions = [DR, DL, UR, UL]
+            route_bbox = get_bbox(self.route_line)
+            for pos in positions:
+                temp = stats_obj.copy().to_corner(pos)
+                if not boxes_intersect(get_bbox(temp), route_bbox):
+                    stats_obj.to_corner(pos)
+                    break
+            else:
+                stats_obj.to_corner(DR)
+            
+            stats_obj.set_color(DARK_BLUE)
+            stats_obj.set_z_index(20)
+            scene.play(FadeIn(stats_obj, run_time=0.5))
 
         intro_animations: list[Animation] = [
             Create(base_track[0], run_time=self.style.base_draw_time, rate_func=self._length_rate),

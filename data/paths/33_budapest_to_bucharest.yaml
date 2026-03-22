@@ -11,7 +11,7 @@ end:
   lat: 44.44639
   lon: 26.074165
   name: Bucharest North / București Nord
-  offset_minutes: 1000
+  offset_minutes: 940
 waypoints:
 - lat: 47.179165
   lon: 20.17583
@@ -61,85 +61,85 @@ waypoints:
 - lat: 46.340831
   lon: 21.297774
   name: Curtici
-  offset_minutes: 300
+  offset_minutes: 240
   stopped_minutes: 35
 - lat: 46.188886
   lon: 21.324166
   name: Arad
-  offset_minutes: 346
+  offset_minutes: 286
   stopped_minutes: 2
 - lat: 45.883891
   lon: 22.909441
   name: Deva
-  offset_minutes: 485
+  offset_minutes: 425
   stopped_minutes: 1
 - lat: 45.846388
   lon: 23.014444
   name: Simeria
-  offset_minutes: 495
+  offset_minutes: 435
   stopped_minutes: 29
 - lat: 45.861391
   lon: 23.210004
   name: Orăștie
-  offset_minutes: 535
+  offset_minutes: 475
   stopped_minutes: 1
 - lat: 45.989164
   lon: 23.498054
   name: Vințu de Jos
-  offset_minutes: 555
+  offset_minutes: 495
   stopped_minutes: 1
 - lat: 45.963886
   lon: 23.586113
   name: Sebeș Alba
-  offset_minutes: 567
+  offset_minutes: 507
   stopped_minutes: 1
 - lat: 45.799725
   lon: 24.161108
   name: Sibiu
-  offset_minutes: 652
+  offset_minutes: 592
   stopped_minutes: 5
 - lat: 45.830001
   lon: 24.975836
   name: Făgăraș
-  offset_minutes: 743
+  offset_minutes: 683
   stopped_minutes: 2
 - lat: 45.693329
   lon: 25.456669
   name: Codlea
-  offset_minutes: 811
+  offset_minutes: 751
   stopped_minutes: 1
 - lat: 45.661948
   lon: 25.613612
   name: Brașov
-  offset_minutes: 833
+  offset_minutes: 773
   stopped_minutes: 20
 - lat: 45.504996
   lon: 25.574724
   name: Predeal
-  offset_minutes: 887
+  offset_minutes: 827
   stopped_minutes: 1
 - lat: 45.445299
   lon: 25.552332
   name: Azuga
-  offset_minutes: 897
+  offset_minutes: 837
   stopped_minutes: 1
 - lat: 45.415832
   lon: 25.537221
   name: Bușteni
-  offset_minutes: 903
+  offset_minutes: 843
   stopped_minutes: 1
 - lat: 45.35306
   lon: 25.553609
   name: Sinaia
-  offset_minutes: 912
+  offset_minutes: 852
   stopped_minutes: 1
 - lat: 45.132222
   lon: 25.711387
   name: Câmpina
-  offset_minutes: 938
+  offset_minutes: 878
   stopped_minutes: 1
 - lat: 44.924446
   lon: 25.99444
   name: Ploiești Vest
-  offset_minutes: 960
+  offset_minutes: 900
   stopped_minutes: 2
