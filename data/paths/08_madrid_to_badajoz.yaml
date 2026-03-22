@@ -1,5 +1,6 @@
 name: Madrid-Atocha Cercanías to Badajoz
 transport: train
+top_speed: 200
 start:
   lat: 40.406665
   lon: -3.689443

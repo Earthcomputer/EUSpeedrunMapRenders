@@ -1,5 +1,6 @@
 name: London Euston to Crewe
 transport: train
+top_speed: 177
 start:
   lat: 51.525836
   lon: -0.133058

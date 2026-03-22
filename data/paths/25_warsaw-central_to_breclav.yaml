@@ -1,5 +1,6 @@
 name: Warsaw Central to Břeclav
 transport: train
+top_speed: 160
 start:
   lat: 52.228613
   lon: 21.002775

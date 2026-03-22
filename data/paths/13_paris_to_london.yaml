@@ -1,5 +1,6 @@
 name: Paris Gare du Nord to London St. Pancras International
 transport: train
+top_speed: 300
 start:
   lat: 48.880275
   lon: 2.355282

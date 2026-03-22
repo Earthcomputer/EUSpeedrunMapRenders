@@ -1,5 +1,6 @@
 name: Maribor to Komárom
 transport: train
+top_speed: 160
 start:
   lat: 46.561948
   lon: 15.657501

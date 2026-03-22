@@ -1,5 +1,6 @@
 name: Ormož to Maribor
 transport: train
+top_speed: 160
 start:
   lat: 46.403333
   lon: 16.156115

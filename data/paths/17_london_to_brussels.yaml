@@ -1,5 +1,6 @@
 name: London St. Pancras International to Brussels-Midi
 transport: train
+top_speed: 300
 start:
   lat: 51.530555
   lon: -0.125274

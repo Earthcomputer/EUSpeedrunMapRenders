@@ -1,5 +1,6 @@
 name: Sofia to Svilengrad
 transport: train
+top_speed: 160
 start:
   lat: 42.71194
   lon: 23.320832

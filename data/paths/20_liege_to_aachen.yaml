@@ -1,5 +1,6 @@
 name: Liège-Guillemins to Aachen Hbf
 transport: train
+top_speed: 140
 start:
   lat: 50.624443
   lon: 5.566669

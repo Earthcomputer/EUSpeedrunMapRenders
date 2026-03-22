@@ -1,5 +1,6 @@
 name: Svilengrad to Halkalı
 transport: train
+top_speed: 120
 start:
   lat: 41.763623
   lon: 26.20263

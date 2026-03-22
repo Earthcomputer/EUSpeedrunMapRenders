@@ -10,6 +10,8 @@ from manim import (
     CapStyleType,
     Circle,
     Create,
+    DARK_BLUE,
+    DR,
     FadeIn,
     LineJointType,
     Scene,
@@ -30,50 +32,6 @@ class RouteLayerStyle:
     color: str
     width: float
     opacity: float = 1.0
-
-
-@dataclass(frozen=True, slots=True)
-class SpeedSegment:
-    start: float
-    end: float
-    kmh: float
-
-
-class SpeedProfile:
-    def __init__(self, segments: Sequence[SpeedSegment]) -> None:
-        cleaned = [segment for segment in segments if segment.end > segment.start]
-        if not cleaned:
-            cleaned = [SpeedSegment(0.0, 1.0, 80.0)]
-        self.segments = sorted(cleaned, key=lambda segment: segment.start)
-
-    def speed_at(self, progress: float) -> float:
-        clamped = min(1.0, max(0.0, float(progress)))
-        current_index = 0
-        for index, segment in enumerate(self.segments):
-            if segment.start <= clamped <= segment.end:
-                current_index = index
-                break
-            if clamped >= segment.end:
-                current_index = index
-        segment = self.segments[current_index]
-        speed = float(segment.kmh)
-        blend_width = max(0.015, min(0.06, (segment.end - segment.start) * 0.38))
-        if current_index > 0:
-            previous_speed = float(self.segments[current_index - 1].kmh)
-            start_blend_end = segment.start + blend_width
-            if clamped < start_blend_end:
-                t = float(np.clip((clamped - segment.start) / max(1e-6, blend_width), 0.0, 1.0))
-                t = t * t * (3.0 - 2.0 * t)
-                speed = float(interpolate(previous_speed, speed, t))
-        last_index = len(self.segments) - 1
-        if current_index < last_index:
-            next_speed = float(self.segments[current_index + 1].kmh)
-            end_blend_start = segment.end - blend_width
-            if clamped > end_blend_start:
-                t = float(np.clip((clamped - end_blend_start) / max(1e-6, blend_width), 0.0, 1.0))
-                t = t * t * (3.0 - 2.0 * t)
-                speed = float(interpolate(speed, next_speed, t))
-        return float(np.clip(speed, 12.0, 380.0))
 
 
 @dataclass(frozen=True, slots=True)
@@ -207,51 +165,6 @@ class TripRoute:
         tangent /= tangent_norm
         return np.array([-tangent[1], tangent[0], 0.0], dtype=float)
 
-    def _build_speed_label(self, speed_profile: SpeedProfile, progress: ValueTracker) -> Text:
-        label = Text("0 km/h", font="Open Sans", font_size=12).set_color("#1E2D3C")
-        label.set_fill(opacity=0.98)
-        label.set_stroke("#F2F7FB", width=1.15, opacity=0.82)
-        initial_point = self.route_line.point_from_proportion(0.0)
-        state = {
-            "speed": 0.0,
-            "display": -1,
-            "normal": self._route_normal(0.0),
-            "position": initial_point,
-        }
-
-        def update_label(mob: Text, dt: float) -> Text:
-            raw = float(np.clip(progress.get_value(), 0.0, 1.0))
-            target_speed = speed_profile.speed_at(raw)
-            blend = min(1.0, dt * 8.0) if dt > 0 else 1.0
-            state["speed"] = float(interpolate(state["speed"], target_speed, blend))
-            display_speed = int(round(state["speed"]))
-            if display_speed != state["display"]:
-                state["display"] = display_speed
-                mob.become(
-                    Text(f"{display_speed} km/h", font="Open Sans", font_size=12)
-                    .set_color("#1E2D3C")
-                    .set_fill(opacity=0.98)
-                    .set_stroke("#F2F7FB", width=1.15, opacity=0.82)
-                )
-            curve_progress = self._distance_to_proportion(raw)
-            point = self.route_line.point_from_proportion(curve_progress)
-            normal = self._route_normal(curve_progress)
-            if float(np.dot(normal[:2], state["normal"][:2])) < 0.0:
-                normal = -normal
-            stable_normal = 0.9 * state["normal"] + 0.1 * normal
-            norm = float(np.linalg.norm(stable_normal[:2]))
-            if norm > 1e-6:
-                stable_normal /= norm
-            state["normal"] = stable_normal
-            target_position = point + stable_normal * 0.24
-            position_blend = min(1.0, dt * 14.0) if dt > 0 else 1.0
-            state["position"] = interpolate(state["position"], target_position, position_blend)
-            mob.move_to(state["position"])
-            return mob
-
-        label.add_updater(update_label)
-        return label
-
     def _build_station_marks(self, station_progresses: Sequence[float]) -> VGroup:
         marks = VGroup()
         if len(station_progresses) < 3:
@@ -276,7 +189,9 @@ class TripRoute:
             scene: Scene,
             draw_time: float | None = None,
             keep_on_top: Sequence | None = None,
-            speed_profile: SpeedProfile | None = None,
+            total_distance: float | None = None,
+            total_time: float | None = None,
+            top_speed: float | None = None,
             station_progresses: Sequence[float] | None = None,
     ) -> TripRoute:
         recommended = float(np.clip(2.5 + self.path_length * 0.32, 2.8, 7.2))
@@ -285,8 +200,36 @@ class TripRoute:
         layers = [template.copy() for template in layer_templates]
         base_track = self._build_base_track()
         progress = ValueTracker(0.0)
-        speed_label = self._build_speed_label(speed_profile, progress) if speed_profile is not None else None
+        speed_label = None
         station_marks = self._build_station_marks(station_progresses or [])
+
+        if total_distance is not None or total_time is not None or top_speed is not None:
+            stats = []
+            if total_distance is not None:
+                stats.append(("Distance:", f"{round(total_distance)}km ({round(total_distance * 0.621371)}mi)"))
+            if total_time is not None:
+                if total_time >= 60:
+                    if total_time % 60 == 0:
+                        stats.append(("Time:", f"{int(total_time // 60)}h"))
+                    else:
+                        stats.append(("Time:", f"{int(total_time // 60)}h {int(total_time % 60)}m"))
+                else:
+                    stats.append(("Time:", f"{int(total_time)}m"))
+            if total_distance is not None and total_time is not None:
+                average_speed = total_distance / total_time * 60
+                stats.append(("Average speed:", f"{round(average_speed)}km/h ({round(average_speed * 0.621371)}mph)"))
+            if top_speed is not None:
+                stats.append(("Top speed:", f"{round(top_speed)}km/h ({round(top_speed * 0.621371)}mph)"))
+            
+            stats_obj = VGroup()
+            for left, right in stats:
+                stats_obj.add(Text(left, font="Open Sans"))
+                stats_obj.add(Text(right, font="Open Sans"))
+            
+            stats_obj.scale(0.4)
+            max_height = max((subobj.height for subobj in stats_obj.submobjects))
+            stats_obj.arrange_in_grid(cols=2, col_alignments="rl", buff=0.1, row_heights=[max_height] * len(stats)).to_corner(DR).set_color(DARK_BLUE)
+            scene.add_foreground_mobject(stats_obj)
 
         intro_animations: list[Animation] = [
             Create(base_track[0], run_time=self.style.base_draw_time, rate_func=self._length_rate),

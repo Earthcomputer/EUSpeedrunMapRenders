@@ -1,5 +1,6 @@
 name: Spielfeld-Strass to Maribor
 transport: train
+top_speed: 130
 start:
   lat: 46.709443
   lon: 15.629167

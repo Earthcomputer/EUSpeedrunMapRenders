@@ -1,5 +1,6 @@
 name: Komárom to Budapest-Kelenföld
 transport: train
+top_speed: 160
 start:
   lat: 47.749441
   lon: 18.113615

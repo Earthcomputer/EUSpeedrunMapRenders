@@ -67,7 +67,7 @@ class MapMarker(VGroup):
             Circle(radius=0.05).set_fill("#FFD45C", opacity=1.0).set_stroke(WHITE, width=0.6, opacity=0.78),
         ).move_to(location_point)
 
-        self.text = Text(label, font="Open Sans", font_size=24).set_color(WHITE)
+        self.text = Text(label, font="Open Sans").scale(0.5).set_color(WHITE)
         width = self.text.width + 0.34
         height = self.text.height + 0.18
         self.label_shadow = RoundedRectangle(corner_radius=0.12, width=width, height=height).set_fill(BLACK,

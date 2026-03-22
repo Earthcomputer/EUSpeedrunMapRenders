@@ -1,5 +1,6 @@
 name: Brussels-Midi to Luxembourg
 transport: train
+top_speed: 160
 start:
   lat: 50.835833
   lon: 4.336666

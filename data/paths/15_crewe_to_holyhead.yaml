@@ -1,5 +1,6 @@
 name: Crewe to Holyhead
 transport: train
+top_speed: 145
 start:
   lat: 53.086669
   lon: -2.431663

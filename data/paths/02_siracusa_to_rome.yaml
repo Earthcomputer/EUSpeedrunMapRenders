@@ -1,5 +1,6 @@
 name: Siracusa to Roma Termini
 transport: train
+top_speed: 200
 start:
   lat: 37.068889
   lon: 15.280556

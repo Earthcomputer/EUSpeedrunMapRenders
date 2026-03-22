@@ -76,6 +76,7 @@ class PathSpec:
     end: PathPoint
     waypoints: tuple[PathPoint, ...] = ()
     name: str | None = None
+    top_speed: float | None = None
 
     def __post_init__(self) -> None:
         if self.transport not in ALLOWED_TRANSPORTS:
@@ -130,6 +131,12 @@ def load_path_spec(path: Path) -> PathSpec:
         raise ValueError(
             f'Path config "{path.as_posix()}" transport must be one of {", ".join(ALLOWED_TRANSPORTS)}'
         )
+    top_speed = payload.get("top_speed")
+    if top_speed is not None:
+        try:
+            top_speed = float(top_speed)
+        except Exception as exc:
+            raise ValueError(f'Path config "{path.as_posix()}" has invalid top_speed') from exc
     start = _parse_point(payload.get("start"), "start", path)
     end = _parse_point(payload.get("end"), "end", path)
     waypoints_raw = payload.get("waypoints", [])
@@ -147,6 +154,7 @@ def load_path_spec(path: Path) -> PathSpec:
         end=end,
         waypoints=waypoints,
         name=name,
+        top_speed=top_speed,
     )
 
 

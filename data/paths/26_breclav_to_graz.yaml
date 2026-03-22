@@ -1,5 +1,6 @@
 name: Břeclav to Graz Hbf
 transport: train
+top_speed: 160
 start:
   lat: 48.758057
   lon: 16.896943

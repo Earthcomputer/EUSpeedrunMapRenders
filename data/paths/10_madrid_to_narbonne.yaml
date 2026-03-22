@@ -1,5 +1,6 @@
 name: Madrid-Puerta de Atocha to Narbonne
 transport: train
+top_speed: 300
 start:
   lat: 40.406386
   lon: -3.690836

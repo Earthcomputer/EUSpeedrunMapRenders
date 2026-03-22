@@ -1,5 +1,6 @@
 name: Ventimiglia to Nice Ville
 transport: train
+top_speed: 90
 start:
   lat: 43.792218
   lon: 7.610277

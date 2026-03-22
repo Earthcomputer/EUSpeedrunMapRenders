@@ -1,5 +1,6 @@
 name: Holyhead to London Euston
 transport: train
+top_speed: 177
 start:
   lat: 53.30472
   lon: -4.629723

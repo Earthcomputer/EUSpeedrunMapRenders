@@ -1,5 +1,6 @@
 name: Milan Centrale to Ventimiglia
 transport: train
+top_speed: 180
 start:
   lat: 45.486388
   lon: 9.204163

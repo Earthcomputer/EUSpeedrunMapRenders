@@ -1,5 +1,6 @@
 name: Luxembourg to Liège-Guillemins
 transport: train
+top_speed: 120
 start:
   lat: 49.599996
   lon: 6.134167

@@ -1,5 +1,6 @@
 name: Toulouse Matabiau to Paris Austerlitz
 transport: train
+top_speed: 200
 start:
   lat: 43.611113
   lon: 1.45361

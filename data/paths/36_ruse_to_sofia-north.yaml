@@ -1,5 +1,6 @@
 name: Ruse to Sofia North
 transport: train
+top_speed: 130
 start:
   lat: 43.833335
   lon: 25.95611

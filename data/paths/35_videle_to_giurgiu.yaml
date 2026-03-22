@@ -1,5 +1,6 @@
 name: Videle to Giurgiu
 transport: train
+top_speed: 70
 start:
   lat: 44.283892
   lon: 25.5375

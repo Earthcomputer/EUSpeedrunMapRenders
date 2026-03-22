@@ -1,5 +1,6 @@
 name: Budapest-Nyugati to Bucharest North
 transport: train
+top_speed: 160
 start:
   lat: 47.510831
   lon: 19.0575

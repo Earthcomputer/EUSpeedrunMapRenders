@@ -1,5 +1,6 @@
 name: Istanbul (Söğütlüçeşme) to Konya YHT
 transport: train
+top_speed: 250
 start:
   lat: 40.990559
   lon: 29.037774

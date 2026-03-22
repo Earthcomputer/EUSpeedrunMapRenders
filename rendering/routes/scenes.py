@@ -12,7 +12,7 @@ from tqdm import tqdm
 
 from rendering.core.map_markers import MapMarker
 from rendering.core.map_scene import TileMapScene
-from rendering.core.route_visuals import SpeedProfile, SpeedSegment, TripRoute
+from rendering.core.route_visuals import TripRoute
 from rendering.core.tile_map import TileMap
 
 from .brouter import ensure_geojson_for_spec_with_status, find_cached_geojson
@@ -41,29 +41,6 @@ class RenderGeoJSON:
     scene_name: str
 
 
-def _fallback_speed_profile() -> SpeedProfile:
-    return SpeedProfile([SpeedSegment(0.0, 1.0, 90.0)])
-
-
-def _normalize_hour_series(values: list[float]) -> list[float]:
-    if not values:
-        return []
-    output = [float(value) for value in values]
-    for index in range(1, len(output)):
-        while output[index] < output[index - 1] - 1e-6:
-            output[index] += 24.0
-    for index in range(1, len(output)):
-        if output[index] <= output[index - 1] + 1e-4:
-            output[index] = output[index - 1] + 1 / 120
-    return output
-
-
-def _node_timeline_hour(node: PathPoint) -> float:
-    if node.offset_minutes is None:
-        raise ValueError("Every YAML path point must include offset_minutes")
-    return float(node.offset_minutes) / 60.0
-
-
 class BaseRouteScene(TileMapScene):
     def route_map_view(self) -> tuple[float, float, float]:
         raise NotImplementedError
@@ -75,7 +52,9 @@ class BaseRouteScene(TileMapScene):
         raise NotImplementedError
 
     def route_animation_options(self, geojson_path: Path) -> dict[str, object]:
-        return {}
+        route_points = load_route_geo_points(geojson_path)
+        total_distance = cumulative_distances(route_points)[-1]
+        return {"total_distance": total_distance}
 
     def create_tile_map(self, **kwargs: Any) -> TileMap:
         center_lat, center_lon, zoom = self.route_map_view()
@@ -144,7 +123,7 @@ class BaseRouteScene(TileMapScene):
                     self.wait(0.2)
                 self.play(animation)
         end_markers[-1].show_final_state()
-        marker_front = [*start_markers[-1].foreground_mobjects(), *end_markers[-1].foreground_mobjects()]
+        marker_front = [*start_markers[-1].foreground_mobjects(), *end_markers[-1].foreground_mobjects(), start_markers[0].dot, start_markers[0].halo, end_markers[0].dot, end_markers[0].halo]
         route.create_and_animate(self, keep_on_top=marker_front, **self.route_animation_options(geojson_path))
         self.wait(0.4)
 
@@ -163,71 +142,14 @@ class PathScene(BaseRouteScene):
     def route_labels(self) -> tuple[str, str]:
         return self.path_spec.start.names, self.path_spec.end.names
 
-    def _build_speed_profile(self, geojson_path: Path) -> tuple[SpeedProfile, list[float]]:
-        points = self.path_spec.points()
-        if len(points) < 2:
-            return _fallback_speed_profile(), []
-        station_coords = [(float(point.lat), float(point.lon)) for point in points]
-        route_points = load_route_geo_points(geojson_path)
-        if len(route_points) < 2:
-            return _fallback_speed_profile(), []
-        route_total_distance = cumulative_distances(route_points)[-1]
-        station_progresses = station_progresses_on_route(station_coords, route_points)
-        if len(station_progresses) != len(points):
-            return _fallback_speed_profile(), station_progresses
-        timed_indices = [index for index, point in enumerate(points) if point.offset_minutes is not None]
-        if len(timed_indices) < 2:
-            return _fallback_speed_profile(), station_progresses
-        timed_hours = [_node_timeline_hour(points[index]) for index in timed_indices]
-        timeline = _normalize_hour_series(timed_hours)
-        if len(timeline) != len(timed_indices):
-            return _fallback_speed_profile(), station_progresses
-        profile_segments: list[SpeedSegment] = []
-        previous_speed: float | None = None
-        for segment_index, ((start_point_index, end_point_index), (start_hour, end_hour)) in enumerate(
-            zip(zip(timed_indices, timed_indices[1:]), zip(timeline, timeline[1:]))
-        ):
-            if end_point_index <= start_point_index:
-                continue
-            raw_duration = max(1 / 120, end_hour - start_hour)
-            start_point = points[start_point_index]
-            dwell_hours = max(0.0, float(start_point.stopped_minutes or 0) / 60.0)
-            moving_duration = raw_duration - min(raw_duration * 0.85, dwell_hours)
-            duration = max(1 / 120, moving_duration)
-            start_progress = station_progresses[start_point_index]
-            end_progress = station_progresses[end_point_index]
-            if end_progress <= start_progress:
-                continue
-            distance = max(0.01, (end_progress - start_progress) * max(0.01, route_total_distance))
-            base_speed = distance / duration
-            shaped_speed = base_speed * (1.0 + 0.04 * math.sin(segment_index * 1.3 + 0.5))
-            if previous_speed is not None:
-                shaped_speed = previous_speed * 0.62 + shaped_speed * 0.38
-            shaped_speed = float(np.clip(shaped_speed, 34.0, 220.0))
-            start = start_progress
-            end = end_progress
-            if end - start <= 1e-5:
-                continue
-            profile_segments.append(SpeedSegment(float(start), float(end), shaped_speed))
-            previous_speed = shaped_speed
-        if not profile_segments:
-            return _fallback_speed_profile(), station_progresses
-        return SpeedProfile(profile_segments), station_progresses
-
     def route_animation_options(self, geojson_path: Path) -> dict[str, object]:
+        options = super().route_animation_options(geojson_path)
         station_coords = [(float(point.lat), float(point.lon)) for point in self.path_spec.points()]
         station_progresses = station_progresses_on_route(station_coords, load_route_geo_points(geojson_path))
-        if self._speed_label_enabled():
-            speed_profile, profiled_progresses = self._build_speed_profile(geojson_path)
-            if len(profiled_progresses) == len(station_coords):
-                station_progresses = profiled_progresses
-            return {
-                "speed_profile": speed_profile,
-                "station_progresses": station_progresses,
-            }
-        return {
-            "station_progresses": station_progresses,
-        }
+        options["station_progresses"] = station_progresses
+        options["total_time"] = self.path_spec.end.offset_minutes
+        options["top_speed"] = self.path_spec.top_speed
+        return options
 
     def route_geojson_path(self) -> Path:
         cached = find_cached_geojson(self.path_spec)

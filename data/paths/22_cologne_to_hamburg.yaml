@@ -1,5 +1,6 @@
 name: Cologne Hbf to Hamburg Hbf
 transport: train
+top_speed: 200
 start:
   lat: 50.943056
   lon: 6.958613

@@ -1,5 +1,6 @@
 name: Bucharest North to Videle
 transport: train
+top_speed: 120
 start:
   lat: 44.44639
   lon: 26.074165

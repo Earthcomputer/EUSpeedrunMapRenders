@@ -1,5 +1,6 @@
 name: Hamburg Hbf to Stockholm Central
 transport: train
+top_speed: 200
 start:
   lat: 53.552778
   lon: 10.006945

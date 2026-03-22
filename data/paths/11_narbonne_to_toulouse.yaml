@@ -1,5 +1,6 @@
 name: Narbonne to Toulouse Matabiau
 transport: train
+top_speed: 160
 start:
   lat: 43.190552
   lon: 3.005552

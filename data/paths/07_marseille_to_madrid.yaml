@@ -1,5 +1,6 @@
 name: Marseille Saint-Charles to Madrid-Puerta de Atocha
 transport: train
+top_speed: 300
 start:
   lat: 43.302774
   lon: 5.380278

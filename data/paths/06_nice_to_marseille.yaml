@@ -1,5 +1,6 @@
 name: Nice Ville to Marseille Saint-Charles
 transport: train
+top_speed: 150
 start:
   lat: 43.704448
   lon: 7.261945

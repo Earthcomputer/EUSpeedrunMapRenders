@@ -1,5 +1,6 @@
 name: Graz Hbf to Spielfeld-Strass
 transport: train
+top_speed: 160
 start:
   lat: 47.07222
   lon: 15.416392
