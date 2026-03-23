@@ -210,10 +210,16 @@ class TripRoute:
         speed_label = None
         station_marks = self._build_station_marks(station_progresses or [])
 
+        def format_number(n: float) -> str:
+            if n < 10:
+                return f"{round(n*10)/10:.1f}"
+            else:
+                return f"{round(n)}"
+
         if total_distance is not None or total_time is not None or top_speed is not None:
             stats = []
             if total_distance is not None:
-                stats.append(("Distance:", f"{round(total_distance)}km ({round(total_distance * 0.621371)}mi)"))
+                stats.append(("Distance:", f"{format_number(total_distance)}km ({format_number(total_distance * 0.621371)}mi)"))
             if total_time is not None:
                 if total_time >= 60:
                     if total_time % 60 == 0:
@@ -224,9 +230,9 @@ class TripRoute:
                     stats.append(("Time:", f"{int(total_time)}m"))
             if total_distance is not None and total_time is not None:
                 average_speed = total_distance / total_time * 60
-                stats.append(("Average speed:", f"{round(average_speed)}km/h ({round(average_speed * 0.621371)}mph)"))
+                stats.append(("Average speed:", f"{format_number(average_speed)}km/h ({format_number(average_speed * 0.621371)}mph)"))
             if top_speed is not None:
-                stats.append(("Top speed:", f"{round(top_speed)}km/h ({round(top_speed * 0.621371)}mph)"))
+                stats.append(("Top speed:", f"{format_number(top_speed)}km/h ({format_number(top_speed * 0.621371)}mph)"))
             
             stats_obj = VGroup()
             for left, right in stats:
