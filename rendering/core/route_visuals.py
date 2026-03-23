@@ -41,7 +41,7 @@ class RouteLayerStyle:
 @dataclass(frozen=True, slots=True)
 class RouteVisualStyle:
     layers: tuple[RouteLayerStyle, ...]
-    draw_time: float = 3.1
+    draw_time: float = 1.0
     base_draw_time: float = 0.9
 
 
@@ -200,7 +200,8 @@ class TripRoute:
     ) -> TripRoute:
         for mobj in keep_on_top or []:
             mobj.set_z_index(10)
-        recommended = float(np.clip(2.5 + self.path_length * 0.32, 2.8, 7.2))
+        #recommended = float(np.clip(2.5 + self.path_length * 0.32, 2.8, 7.2))
+        recommended = 0
         duration = draw_time if draw_time is not None else max(self.style.draw_time, recommended)
         layer_templates = [self._build_layer(layer_style) for layer_style in self.style.layers]
         layers = [template.copy() for template in layer_templates]
